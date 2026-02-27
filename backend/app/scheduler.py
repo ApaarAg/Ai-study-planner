@@ -13,12 +13,13 @@ def generate_plan(topics, available_hours):
 
     delta=0.25
     total_steps=int(available_hours/delta)
-
+      
     for _ in range(total_steps):
         best_topic=None
         best_gain=-1
-
+        
         for item in topics:
+
             if "predicted_gain" not in item:
                 continue
             mg=marginal_gain(
@@ -39,7 +40,7 @@ def generate_plan(topics, available_hours):
             minutes=int(round(item["allocated_hours"]*60))
             item["allocated_minutes"]=minutes
             item["allocated_time"]=f"{minutes//60}h: {minutes%60}m"
-        return topics
+    return topics
 
 
 
