@@ -46,4 +46,3 @@ def finalize_plan(request:FinalizeRequest):
 @app.post("/analytics")
 def analytics():
     return compute_metrics()
-

@@ -60,5 +60,13 @@ def log_session(predicted_plan,final_plan):
                     final_minutes,
                     delta
                 ])
+                normalized_gain=compute_normalized_gain(
+                    topic["pre_score"],
+                    topic["post_score"]
+                )
 
-print("Writing to:", LOG_PATH)
+def compute_normalized_gain(pre_score,post_score):
+    if pre_score>=100:
+        return 0.0
+    return (post_score-pre_score)/(100-pre_score)
+
