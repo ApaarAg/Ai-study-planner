@@ -8,10 +8,7 @@ os.makedirs(DATA_DIR,exist_ok=True)
 LOG_PATH=os.path.join(DATA_DIR,r"session_logs.csv")
 
 def log_session(predicted_plan,final_plan):
-    print("Logging plan:", predicted_plan)
-    df= pd.read_csv(LOG_PATH)
-    if len(df)%300==0:
-        print("⚠ Retraining threshold reached (300 logs)")
+    
     file_exits=os.path.isfile(LOG_PATH)
 
     final_lookup={
@@ -64,6 +61,10 @@ def log_session(predicted_plan,final_plan):
                     topic["pre_score"],
                     topic["post_score"]
                 )
+            if os.path.isfile(LOG_PATH):
+                df=pd.read_csv(LOG_PATH)
+                if len(df)>=300:
+                    print("Retraining threshold reached (300 logs)")
 
 def compute_normalized_gain(pre_score,post_score):
     if pre_score>=100:
