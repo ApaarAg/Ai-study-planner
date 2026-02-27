@@ -1,3 +1,4 @@
+import numpy as np
 def compute_priority(topic):
     urgency=1/(topic["days_to_exam"]+1)
     gain=topic["predicted_gain"]
@@ -7,37 +8,47 @@ def compute_priority(topic):
 
 def generate_plan(topics, available_hours):
 
-    # Compute priority
     for item in topics:
-        item["priority_score"] = compute_priority(item)
+        item["allocated_hours"]=0
 
-    # Sort by priority descending
-    sorted_topics = sorted(
-        topics,
-        key=lambda x: x["priority_score"],
-        reverse=True
-    )
+    delta=0.25
+    total_steps=int(available_hours/delta)
 
-    # Compute total priority
-    total_priority = sum(t["priority_score"] for t in sorted_topics)
+    for _ in range(total_steps):
+        best_topic=None
+        best_gain=-1
 
-    # Proportional allocation
-    for t in sorted_topics:
-        if total_priority == 0:
-            t["allocated_hours"] = 0
-        else:
-            raw_hours=(
-                t["priority_score"]/total_priority
-            )*available_hours
+        for item in topics:
+            if "predicted_gain" not in item:
+                continue
+            mg=marginal_gain(
+                item["predicted_gain"],
+                item["allocated_hours"]
+            )
+            if np.isnan(mg):
+                continue
 
-            total_minutes=raw_hours*60
-            rounded_minutes=int(round(total_minutes))
+            if mg>best_gain:
+                best_gain=mg
+                best_topic=item
+        if best_topic is None:
+            break
+        best_topic["allocated_hours"]+=delta # pyright: ignore[reportOptionalSubscript]
 
-            hours=rounded_minutes//60
-            minutes=rounded_minutes % 60
+        for item in topics:
+            minutes=int(round(item["allocated_hours"]*60))
+            item["allocated_minutes"]=minutes
+            item["allocated_time"]=f"{minutes//60}h: {minutes%60}m"
+        return topics
 
-            t["allocated_minutes"]=rounded_minutes
-            t["allocated_time"]=f"{hours}h :{minutes}m"
-    return sorted_topics
 
+
+
+def total_gain(predicted_gain,hours,k=0.8):
+    return predicted_gain*(1-np.exp(-k*hours))
+
+def marginal_gain(predicted_gain,current_hours,delta=0.25,k=0.8):
+    before=total_gain(predicted_gain,current_hours,k)
+    after=total_gain(predicted_gain,current_hours+delta,k)
+    return after-before
 
