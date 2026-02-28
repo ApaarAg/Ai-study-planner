@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.stats import spearmanr
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error
 from xgboost import XGBRegressor
@@ -101,6 +103,31 @@ model.fit(X_train, Y_train)
 
 preds = model.predict(X_test)
 
+plt.figure()
+plt.scatter(Y_test,preds,alpha=0.4)
+plt.xlabel("Actual Improvement")
+plt.ylabel("Predicted Improvement")
+plt.title("Prediction vs Actual")
+plt.plot([Y_test.min(),Y_test.max()],
+         [Y_test.min(),Y_test.max()],
+         "r--")
+plt.show()
+
+residuals=Y_test-preds
+plt.figure()
+plt.hist(residuals,bins=40)
+plt.title("Residual Distribution")
+plt.xlabel("Residual")
+plt.ylabel("Frequency")
+plt.show()
+
+X_perturbed=X_test.copy()
+noise=np.random.normal(0,0.02,X_perturbed.shape)
+X_perturbed=X_perturbed + noise
+perturbed_preds=model.predict(X_perturbed)
+
+rank_corr,_=spearmanr(preds,perturbed_preds)
+print("Ranking Stability(Spearman):",rank_corr)
 print("R2:", r2_score(Y_test, preds))
 print("RMSE:", np.sqrt(mean_squared_error(Y_test, preds)))
 
