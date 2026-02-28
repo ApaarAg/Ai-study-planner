@@ -42,16 +42,23 @@ data["predicted_minutes"] = np.clip(data["predicted_minutes"], 10, 300)
 # -------------------------
 # 4. Diminishing Return Improvement
 # -------------------------
-k = 0.01  # curvature strength
+k = 0.04 # curvature strength
 
-max_possible_improvement = data["remaining_gap"]
+max_possible_improvement = data["remaining_gap"]/(1 + 0.6 * data["difficulty"])
 
 improvement = (
     max_possible_improvement *
-    (1 - np.exp(-k * data["predicted_minutes"])) /
-    data["difficulty"]
+    (1 - np.exp(-k * data["predicted_minutes"]))
 )
+motivation = np.random.normal(1.0, 0.25, n_samples)
+improvement *= motivation
+bad_day = np.random.binomial(1, 0.1, n_samples)  # 10% chance
+improvement *= (1 - 0.5 * bad_day)
+burnout = np.where(data["predicted_minutes"] > 200,
+                   np.random.uniform(0.7, 0.9, n_samples),
+                   1.0)
 
+improvement *= burnout
 # Add noise
 improvement += np.random.normal(0, 1.5, n_samples)
 
