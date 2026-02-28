@@ -69,9 +69,10 @@ data["gain"]=gain
 
 # data["mastery"]=np.clip(data["mastery"],0,1)
 
-
+data["improvement"]=data["post_score"]-data["pre_score"]
 X=data[FEATURES]
-y=data["gain"]
+y=data["improvement"]
+
 
 X_train,X_test,Y_train,Y_test=train_test_split(X,y,test_size=0.2,random_state=89)
 
