@@ -64,7 +64,7 @@ def generate_plan(topics, available_hours):
         topic["allocated_minutes"]=minutes
         topic["allocated_time"] = f"{minutes//60}h {minutes%60}m"
 
-        return {
+    return {
             "study_plan":topics,
             "unused_minutes":0
         }
